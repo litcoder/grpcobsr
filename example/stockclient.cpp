@@ -1,84 +1,16 @@
-#include <obsr/event.hpp>
-#include <spdlog/spdlog.h>
-#include <string>
-
 #include <grpc/grpc.h>
 #include <grpcpp/channel.h>
-#include <grpcpp/client_context.h>
 #include <grpcpp/create_channel.h>
 #include <grpcpp/security/credentials.h>
+#include <obsr/event.hpp>
+#include <obsr/readreactor.hpp>
+#include <spdlog/spdlog.h>
 #include <stockprice.grpc.pb.h>
 
 using google::protobuf::Empty;
 using grpc::Channel;
-using grpc::ClientContext;
 using grpc::ClientReadReactor;
 using grpc::Status;
-
-class StockPriceReadReactor : public ClientReadReactor<StockPriceResponse>
-{
-public:
-  StockPriceReadReactor(
-      std::shared_ptr<StockService::Stub> stub, std::shared_ptr<Publisher> pub)
-      : _mPub(pub)
-  {
-    Empty empty;
-    stub->async()->UpdateStockPrice(&_mContext, &empty, this);
-    StartRead(&_mResp);
-    StartCall();
-  }
-
-  void OnReadDone(bool ok) override
-  {
-    if (ok)
-    {
-      auto symbol = _mResp.symbol();
-      auto price = _mResp.price();
-
-      // spdlog::info("{} / {}", _mResp.symbol(), _mResp.price());
-      // Publish event to subscribers.
-      if (_mPub != nullptr)
-      {
-        auto stock = std::make_shared<Stock>(symbol, price);
-        auto ev = StockUpdateEvent(stock);
-        _mPub->notify(ev);
-      }
-
-      StartRead(&_mResp);
-    }
-  }
-
-  void OnDone(const Status &s) override
-  {
-    spdlog::info("OnDone()");
-    std::unique_lock<std::mutex> l(_mMtx);
-    _mStatus = s;
-    _mAllDone = true;
-    _mCondVar.notify_one();
-  }
-
-  Status Await()
-  {
-    std::unique_lock<std::mutex> l(_mMtx);
-    _mCondVar.wait(
-        l,
-        [this]
-        {
-          return _mAllDone;
-        });
-    return std::move(_mStatus);
-  }
-
-private:
-  std::shared_ptr<Publisher> _mPub;
-  ClientContext _mContext;
-  StockPriceResponse _mResp;
-
-  std::mutex _mMtx;
-  std::condition_variable _mCondVar;
-  Status _mStatus;
-  bool _mAllDone = false;
-};
 
 class StockClient
 {
