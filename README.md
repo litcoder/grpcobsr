@@ -1,5 +1,5 @@
-# Event subscription with gRPC
-Event subscription example on gRPC.
+# Event subscription on gRPC (C++)
+Event subscription example on gRPC. This code implement a simple POC program that sends/receives randomly choosen stock data with random price changes.
 
 ## Build
 ```
