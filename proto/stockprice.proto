@@ -1,0 +1,11 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+message StockPriceResponse {
+    string symbol = 1;
+    double price = 2;
+}
+
+service StockService {
+    rpc UpdateStockPrice(google.protobuf.Empty) returns (stream StockPriceResponse);
+}
