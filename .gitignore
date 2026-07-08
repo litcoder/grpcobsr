@@ -4,3 +4,7 @@
 build/*
 .pytest_cache/*
 */.venv/*
+
+# Added by cargo
+
+/target
