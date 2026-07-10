@@ -1,9 +1,12 @@
 syntax = "proto3";
+package stockservice;
+
 import "google/protobuf/empty.proto";
 
 message StockPriceResponse {
     string symbol = 1;
     double price = 2;
+    uint64 sequence = 3;
 }
 
 service StockService {

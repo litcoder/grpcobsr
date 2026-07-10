@@ -10,4 +10,10 @@ cargo build
 
 ## Run
 
-From a terminal application, run `./server` and `./client` respectively. Note that server accepts number of events to be sent to client, 0 will be set if not given which indicates infinite events.
+```
+# Server
+cargo run --bin server 
+
+# Client
+cargo run --bin client
+```
